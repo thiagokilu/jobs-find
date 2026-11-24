@@ -112,7 +112,8 @@ async function fetchJobs(datePosted = "3days") {
   }
 
   return Array.from(uniqueJobs.values()).sort(
-    (a, b) => (b.job_posted_at_timestamp || 0) - (a.job_posted_at_timestamp || 0),
+    (a, b) =>
+      (b.job_posted_at_timestamp || 0) - (a.job_posted_at_timestamp || 0),
   );
 }
 
@@ -150,7 +151,9 @@ async function sendJobsEmail(datePosted = "3days") {
         (job) => `
           <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
             <h3>${job.job_title || job.title}</h3>
-
+            <p><strong>Empresa:</strong> ${job.employer_name || "N/A"}</p>
+            <p><strong>Localização:</strong> ${job.job_city || job.job_location || "N/A"}</p>
+            <p><strong>Data de publicação:</strong> ${new Date(job.job_posted_at_timestamp * 1000).toLocaleDateString()}</p>
             <a
               href="${job.job_apply_link || job.apply_link}"
               target="_blank"
@@ -174,8 +177,10 @@ async function sendJobsEmail(datePosted = "3days") {
 
 app.post("/api/send-email", async (req, res) => {
   try {
-    const datePosted = req.query.date_posted || req.body?.date_posted || "3days";
+    const datePosted =
+      req.query.date_posted || req.body?.date_posted || "3days";
     await sendJobsEmail(datePosted);
+    console.log("Email sent successfully at", new Date().toLocaleTimeString());
     return res.json({ message: "Email sent successfully" });
   } catch (err) {
     console.error("Error while sending mail:", err);
@@ -185,12 +190,17 @@ app.post("/api/send-email", async (req, res) => {
   }
 });
 
-nodCron.schedule("0 12,18 * * *", async () => {
+nodCron.schedule("0 3,8,12,18 * * *", async () => {
   try {
     await sendJobsEmail();
+    console.log("E-mail agendado enviado às", new Date().toLocaleTimeString());
   } catch (err) {
-    console.error("Error while sending scheduled mail:", err);
+    console.error("Erro ao enviar e-mail agendado:", err);
   }
+});
+
+nodCron.schedule("* * * * *", () => {
+  console.log("Cron disparou:", new Date().toLocaleTimeString());
 });
 
 app.listen(PORT, () => {
