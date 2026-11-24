@@ -138,7 +138,7 @@ async function sendJobsEmail(datePosted = "3days") {
 
   const info = await transporter.sendMail({
     from: '"Thiago Dev" <thiago@thiagodevsite.com>',
-    to: "thiagokilu34@gmail.com",
+    to: process.env.EMAIL_TO,
     subject: "Novas vagas de emprego",
     text: "Confira as novas vagas encontradas pela minha API!",
     html: `
